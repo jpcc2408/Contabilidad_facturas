@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="dashboard-container">
+    {% include "clientes/sidebar.html" %}
+    <main class="main-content">
+        <header class="content-header">
+            <div class="header-left">
+                <h1 class="mb-0">Facturas Pendientes</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
+                        <li class="breadcrumb-item active">Facturas Pendientes</li>
+                    </ol>
+                </nav>
+            </div>
+        </header>
+
+        <div class="dashboard-card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Proyecto</th>
+                                <th>Fecha Solicitud</th>
+                                <th>Total</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for factura in facturas %}
+                            <tr>
+                                <td>
+                                    <div class="client-info">
+                                        <span class="client-name">{{ factura.razon_social }}</span>
+                                        <small class="text-muted">{{ factura.nit }}</small>
+                                    </div>
+                                </td>
+                                <td>{{ factura.proyecto }}</td>
+                                <td>{{ factura.fecha_solicitud }}</td>
+                                <td>{{ factura.moneda }} {{ factura.total_factura|floatformat:2 }}</td>
+                                <td>
+                                    <a href="{% url 'cliente_detalle' factura.correlativo %}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">No hay facturas pendientes</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<style>
+/* Dashboard Layout */
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+}
+
+/* Sidebar Styles - Mantén los estilos del sidebar aquí */
+.sidebar {
+    width: 280px;
+    background: #2c3e50;
+    color: #fff;
+    padding: 1.5rem;
+    height: 100vh;
+    position: fixed;
+    transition: all 0.3s ease;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    margin-left: 280px;
+    padding: 2rem;
+}
+</style>
+{% endblock %}

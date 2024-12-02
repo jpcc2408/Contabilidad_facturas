@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="dashboard-container">
+    {% include "clientes/sidebar.html" %}
+    <main class="main-content">
+        <div class="row mb-3">
+            <div class="col">
+                <h2>Lista de Facturas</h2>
+            </div>
+            <div class="col text-end">
+                <div class="btn-group me-2">
+                    <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-download"></i> Exportar
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{% url 'exportar_facturas' 'csv' %}">CSV</a></li>
+                        <li><a class="dropdown-item" href="{% url 'exportar_facturas' 'pdf' %}">PDF</a></li>
+                    </ul>
+                </div>
+                <a href="{% url 'cliente_nuevo' %}" class="btn btn-primary">
+                    Nueva Solicitud
+                </a>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Buscar</label>
+                        <input type="text" name="q" class="form-control" placeholder="Razón social o NIT" value="{{ request.GET.q }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Estado</label>
+                        <select name="estado" class="form-select">
+                            <option value="">Todos</option>
+                            <option value="Pendiente" {% if request.GET.estado == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+                            <option value="Emitida" {% if request.GET.estado == 'Emitida' %}selected{% endif %}>Emitida</option>
+                            <option value="Pagada" {% if request.GET.estado == 'Pagada' %}selected{% endif %}>Pagada</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Desde</label>
+                        <input type="date" name="fecha_inicio" class="form-control" value="{{ request.GET.fecha_inicio }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Hasta</label>
+                        <input type="date" name="fecha_fin" class="form-control" value="{{ request.GET.fecha_fin }}">
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-search"></i> Filtrar
+                        </button>
+                        <a href="{% url 'cliente_lista' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-undo"></i> Limpiar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tabla de resultados -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Correlativo</th>
+                                <th>Razón Social</th>
+                                <th>NIT</th>
+                                <th>Proyecto</th>
+                                <th>Fecha Solicitud</th>
+                                <th>Total Factura</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cliente in clientes %}
+                            <tr>
+                                <td>{{ cliente.correlativo }}</td>
+                                <td>{{ cliente.razon_social }}</td>
+                                <td>{{ cliente.nit }}</td>
+                                <td>{{ cliente.proyecto }}</td>
+                                <td>{{ cliente.fecha_solicitud|date:"d/m/Y" }}</td>
+                                <td>{{ cliente.moneda }} {{ cliente.total_factura|floatformat:2 }}</td>
+                                <td>
+                                    <span class="badge {% if cliente.estado_factura == 'Pagada' %}bg-success{% elif cliente.estado_factura == 'Emitida' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                        {{ cliente.estado_factura|default:"Pendiente" }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'cliente_detalle' cliente.correlativo %}" class="btn btn-sm btn-info" title="Ver detalle">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center">No hay solicitudes registradas</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Paginación -->
+                {% if clientes.has_other_pages %}
+                <nav aria-label="Page navigation" class="mt-3">
+                    <ul class="pagination justify-content-center">
+                        {% if clientes.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ clientes.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}">Anterior</a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for num in clientes.paginator.page_range %}
+                        <li class="page-item {% if clientes.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}">{{ num }}</a>
+                        </li>
+                        {% endfor %}
+                        
+                        {% if clientes.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ clientes.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}">Siguiente</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</div>
+
+<style>
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+}
+
+.main-content {
+    flex: 1;
+    margin-left: 280px;
+    padding: 2rem;
+    min-width: 0;
+}
+
+.card {
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.table th {
+    border-top: none;
+    color: #8795a1;
+    font-weight: 500;
+}
+
+.badge {
+    padding: 0.5em 1em;
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 0;
+    }
+}
+</style>
+{% endblock %}

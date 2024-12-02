@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="dashboard-container">
+    {% include "clientes/sidebar.html" %}
+    <main class="main-content">
+        <header class="content-header">
+            <div class="header-left">
+                <h1 class="mb-0">Facturas Emitidas</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
+                        <li class="breadcrumb-item active">Facturas Emitidas</li>
+                    </ol>
+                </nav>
+            </div>
+        </header>
+
+        <div class="dashboard-card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Proyecto</th>
+                                <th>Fecha Emisión</th>
+                                <th>No. Factura</th>
+                                <th>Total</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for factura in facturas %}
+                            <tr>
+                                <td>
+                                    <div class="client-info">
+                                        <span class="client-name">{{ factura.razon_social }}</span>
+                                        <small class="text-muted">{{ factura.nit }}</small>
+                                    </div>
+                                </td>
+                                <td>{{ factura.proyecto }}</td>
+                                <td>{{ factura.fecha_emision }}</td>
+                                <td>{{ factura.serie }}-{{ factura.factura }}</td>
+                                <td>{{ factura.moneda }} {{ factura.total_factura|floatformat:2 }}</td>
+                                <td>
+                                    <a href="{% url 'cliente_detalle' factura.correlativo %}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">No hay facturas emitidas</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<style>
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+}
+
+.main-content {
+    flex: 1;
+    margin-left: 280px;
+    padding: 2rem;
+}
+
+.dashboard-card {
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+</style>
+{% endblock %}

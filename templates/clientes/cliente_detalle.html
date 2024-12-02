@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header con información básica y acciones -->
+    <div class="row mb-3">
+        <div class="col">
+            <h2>Cliente #{{ cliente.correlativo }} - {{ cliente.razon_social }}</h2>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'cliente_lista' %}" class="btn btn-secondary me-2">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+            
+            <a href="{% url 'cliente_editar_factura' cliente.correlativo %}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Editar Facturación
+            </a>
+
+            </button>
+            <button class="btn btn-success" onclick="window.print()">
+                <i class="fas fa-print"></i> Imprimir
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Información General -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Información General</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">NIT:</dt>
+                        <dd class="col-sm-8">{{ cliente.nit }}</dd>
+
+                        <dt class="col-sm-4">Dirección:</dt>
+                        <dd class="col-sm-8">{{ cliente.direccion }}</dd>
+
+                        <dt class="col-sm-4">No. Propuesta:</dt>
+                        <dd class="col-sm-8">{{ cliente.no_propuesta }}</dd>
+
+                        <dt class="col-sm-4">Código:</dt>
+                        <dd class="col-sm-8">{{ cliente.codigo }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información del Proyecto -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">Información del Proyecto</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Proyecto:</dt>
+                        <dd class="col-sm-8">{{ cliente.proyecto }}</dd>
+
+                        <dt class="col-sm-4">Socio:</dt>
+                        <dd class="col-sm-8">{{ cliente.socio }}</dd>
+
+                        <dt class="col-sm-4">Encargado:</dt>
+                        <dd class="col-sm-8">{{ cliente.encargado }}</dd>
+
+                        <dt class="col-sm-4">Solicitante:</dt>
+                        <dd class="col-sm-8">{{ cliente.solicitante }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información Financiera -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">Información Financiera</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Moneda:</dt>
+                        <dd class="col-sm-8">{{ cliente.get_moneda_display }}</dd>
+
+                        <dt class="col-sm-4">Tipo Cambio:</dt>
+                        <dd class="col-sm-8">{{ cliente.tipo_cambio }}</dd>
+
+                        <dt class="col-sm-4">Total Factura:</dt>
+                        <dd class="col-sm-8">{{ cliente.moneda }} {{ cliente.total_factura|floatformat:2 }}</dd>
+
+                        <dt class="col-sm-4">Base:</dt>
+                        <dd class="col-sm-8">{{ cliente.base|floatformat:2 }}</dd>
+
+                        <dt class="col-sm-4">IVA:</dt>
+                        <dd class="col-sm-8">{{ cliente.iva|floatformat:2 }}</dd>
+
+                        <dt class="col-sm-4">Impuesto:</dt>
+                        <dd class="col-sm-8">{{ cliente.impuesto|floatformat:2 }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información de Facturación -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-warning">
+                    <h5 class="card-title mb-0">Información de Facturación</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Serie-Factura:</dt>
+                        <dd class="col-sm-8">{{ cliente.serie }}-{{ cliente.factura }}</dd>
+
+                        <dt class="col-sm-4">Fecha Emisión:</dt>
+                        <dd class="col-sm-8">{{ cliente.fecha_emision|default:"No establecida" }}</dd>
+
+                        <dt class="col-sm-4">Estado:</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge {% if cliente.estado_factura == 'Pagada' %}bg-success{% elif cliente.estado_factura == 'Pendiente' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                {{ cliente.estado_factura|default:"No establecido" }}
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-4">Autorización:</dt>
+                        <dd class="col-sm-8">{{ cliente.autorizacion|default:"No establecida" }}</dd>
+
+                        <dt class="col-sm-4">Status:</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge {% if cliente.status == 'Activo' %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ cliente.status|default:"No establecido" }}
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-4">Recibo:</dt>
+                        <dd class="col-sm-8">{{ cliente.recibo_operado|default:"No establecido" }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información de Contacto -->
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="card-title mb-0">Información de Contacto y Concepto</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row mb-0">
+                                <dt class="col-sm-4">Persona que Recibe:</dt>
+                                <dd class="col-sm-8">{{ cliente.persona_recibe }}</dd>
+
+                                <dt class="col-sm-4">Correo Recibe:</dt>
+                                <dd class="col-sm-8">
+                                    <a href="mailto:{{ cliente.correo_recibe }}">{{ cliente.correo_recibe }}</a>
+                                </dd>
+
+                                <dt class="col-sm-4">Correo Cliente:</dt>
+                                <dd class="col-sm-8">
+                                    <a href="mailto:{{ cliente.correo_cliente }}">{{ cliente.correo_cliente }}</a>
+                                </dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dt>Concepto:</dt>
+                            <dd>{{ cliente.concepto|linebreaks }}</dd>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Activar los tooltips de Bootstrap
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+</script>
+{% endblock %}

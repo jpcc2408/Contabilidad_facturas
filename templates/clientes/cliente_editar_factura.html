@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-3">
+        <div class="col">
+            <h2>Editar Facturación</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'cliente_lista' %}">Clientes</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'cliente_detalle' cliente.correlativo %}">{{ cliente.razon_social }}</a></li>
+                    <li class="breadcrumb-item active">Editar Facturación</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">Datos de Facturación - {{ cliente.razon_social }}</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Fecha Emisión</label>
+                            <input type="date" name="fecha_emision" class="form-control" 
+                                   value="{% if cliente.fecha_emision %}{{ cliente.fecha_emision|date:'Y-m-d' }}{% endif %}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Serie</label>
+                            <input type="text" name="serie" class="form-control" 
+                                   value="{{ cliente.serie|default:'' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Factura</label>
+                            <input type="text" name="factura" class="form-control" 
+                                   value="{{ cliente.factura|default:'' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Autorización</label>
+                            <input type="text" name="autorizacion" class="form-control" 
+                                   value="{{ cliente.autorizacion|default:'' }}">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Estado Factura</label>
+                            <select name="estado_factura" class="form-select">
+                                <option value="">Seleccione estado</option>
+                                <option value="Pendiente" {% if cliente.estado_factura == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+                                <option value="Emitida" {% if cliente.estado_factura == 'Emitida' %}selected{% endif %}>Emitida</option>
+                                <option value="Pagada" {% if cliente.estado_factura == 'Pagada' %}selected{% endif %}>Pagada</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-select">
+                                <option value="">Seleccione status</option>
+                                <option value="Activo" {% if cliente.status == 'Activo' %}selected{% endif %}>Activo</option>
+                                <option value="Inactivo" {% if cliente.status == 'Inactivo' %}selected{% endif %}>Inactivo</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Recibo Operado</label>
+                            <input type="text" name="recibo_operado" class="form-control" 
+                                   value="{{ cliente.recibo_operado|default:'' }}">
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <a href="{% url 'cliente_detalle' cliente.correlativo %}" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

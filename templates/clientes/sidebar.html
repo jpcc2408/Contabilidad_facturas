@@ -1,0 +1,111 @@
+<nav class="sidebar">
+    <div class="sidebar-menu">
+        <div class="menu-section">
+            <span class="menu-header">PRINCIPAL</span>
+            <a href="{% url 'dashboard' %}" class="menu-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'cliente_lista' %}" class="menu-item {% if request.resolver_match.url_name == 'cliente_lista' %}active{% endif %}">
+                <i class="fas fa-users"></i>
+                <span>Clientes</span>
+            </a>
+        </div>
+
+        <div class="menu-section">
+            <span class="menu-header">FACTURACIÓN</span>
+            <a href="{% url 'facturas_pendientes' %}" class="menu-item">
+                <i class="fas fa-file-invoice-dollar"></i>
+                <span>Facturas Pendientes</span>
+            </a>
+            <a href="{% url 'facturas_emitidas' %}" class="menu-item">
+                <i class="fas fa-check-circle"></i>
+                <span>Facturas Emitidas</span>
+            </a>
+        </div>
+
+        <div class="menu-section">
+            <span class="menu-header">CONFIGURACIÓN</span>
+            <a href="#" class="menu-item">
+                <i class="fas fa-cog"></i>
+                <span>Ajustes</span>
+            </a>
+        </div>
+    </div>
+</nav>
+
+<style>
+.sidebar {
+    width: 260px;
+    background: #2c3e50;
+    min-height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 60px; /* Altura del navbar */
+    padding: 1.5rem 1rem;
+    z-index: 1000;
+}
+
+.menu-section {
+    margin-bottom: 2rem;
+}
+
+.menu-header {
+    color: #94a3b8;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    color: #e2e8f0;
+    text-decoration: none;
+    border-radius: 0.5rem;
+    margin-bottom: 0.25rem;
+    transition: all 0.2s ease;
+}
+
+.menu-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.menu-item.active {
+    background: #3498db;
+    color: #ffffff;
+}
+
+.menu-item i {
+    width: 20px;
+    margin-right: 12px;
+    font-size: 1.1rem;
+}
+
+.menu-item span {
+    font-size: 0.95rem;
+}
+
+/* Ajuste del contenido principal para acomodar el sidebar */
+.main-content {
+    margin-left: 260px;
+    padding: 2rem;
+    margin-top: 60px; /* Altura del navbar */
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        display: none;
+    }
+    .main-content {
+        margin-left: 0;
+    }
+}
+</style>
