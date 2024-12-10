@@ -58,42 +58,37 @@
                             <div class="col-md-6">
                                 {{ form.tipo_cambio|as_crispy_field }}
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 {{ form.impuesto|as_crispy_field }}
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 {{ form.total_factura|as_crispy_field }}
                             </div>
-                            <div class="col-md-4">
-                                {{ form.base|as_crispy_field }}
-                            </div>
+                        </div>
+                             </div>
+                             <div class="row">
+                                <div class="col-md-6">
+                                    {{ form.fecha_solicitud|as_crispy_field }}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ form.persona_recibe|as_crispy_field }}
+                                </div>
+                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-6">
-                                {{ form.iva|as_crispy_field }}
-                            </div>
-                            <div class="col-md-6">
-                                {{ form.fecha_solicitud|as_crispy_field }}
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                {{ form.persona_recibe|as_crispy_field }}
-                            </div>
                             <div class="col-md-6">
                                 {{ form.correo_recibe|as_crispy_field }}
                             </div>
-                        </div>
-                        <div class="row">
                             <div class="col-md-6">
                                 {{ form.correo_cliente|as_crispy_field }}
                             </div>
-                            <div class="col-md-6">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
                                 {{ form.solicitante|as_crispy_field }}
                             </div>
                         </div>
+                       
                         <!-- Campos ocultos de factura -->
                         {{ form.fecha_emision }}
                         {{ form.serie }}

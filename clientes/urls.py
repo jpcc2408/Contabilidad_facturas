@@ -12,4 +12,6 @@ urlpatterns = [
     path('facturas/emitidas/', views.facturas_emitidas, name='facturas_emitidas'),
     path('facturas/pagadas/', views.facturas_pagadas, name='facturas_pagadas'),
     path('exportar/<str:formato>/', views.exportar_facturas, name='exportar_facturas'),
+    path('<int:pk>/eliminar/', views.cliente_eliminar, name='cliente_eliminar'),
+    path('<int:pk>/imprimir-factura/', views.imprimir_factura, name='imprimir_factura'),
 ]

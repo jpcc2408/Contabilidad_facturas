@@ -21,7 +21,7 @@
             <h5 class="card-title mb-0">Datos de Facturación - {{ cliente.razon_social }}</h5>
         </div>
         <div class="card-body">
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="row">
                     <div class="col-md-6">
@@ -68,6 +68,20 @@
                             <label class="form-label">Recibo Operado</label>
                             <input type="text" name="recibo_operado" class="form-control" 
                                    value="{{ cliente.recibo_operado|default:'' }}">
+                        </div>
+                        
+                        <!-- Campo para archivo -->
+                        <div class="mb-3">
+                            <label class="form-label">Archivo de Factura</label>
+                            <input type="file" name="archivo_factura" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
+                            {% if cliente.archivo_factura %}
+                                <div class="mt-2">
+                                    <small class="text-muted">Archivo actual:</small>
+                                    <a href="{{ cliente.archivo_factura.url }}" target="_blank" class="btn btn-sm btn-info">
+                                        <i class="fas fa-file"></i> Ver archivo actual
+                                    </a>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

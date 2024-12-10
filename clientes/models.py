@@ -55,11 +55,17 @@ class Usuario(AbstractUser):
     def __str__(self):
         return f"{self.username} - {self.get_rol_display()}"
 
+
 class Cliente(models.Model):
     MONEDAS = [
         ('USD', 'Dólares'),
         ('EUR', 'Euros'), 
         ('GTQ', 'Quetzales'),
+    ]
+    
+    TIPO_IMPUESTO = [
+        ('AFECTO', 'Afecto'),
+        ('EXENTO', 'Exento'),
     ]
     
     creado_por = models.ForeignKey(
@@ -80,17 +86,21 @@ class Cliente(models.Model):
     encargado = models.CharField(max_length=100)
     moneda = models.CharField(max_length=3, choices=MONEDAS)
     tipo_cambio = models.DecimalField(max_digits=10, decimal_places=2)
-    impuesto = models.DecimalField(max_digits=10, decimal_places=2)
+    impuesto = models.CharField(
+        max_length=10,
+        choices=TIPO_IMPUESTO,
+        default='AFECTO',
+        verbose_name='Tipo de Impuesto'
+    )
     total_factura = models.DecimalField(max_digits=15, decimal_places=2)
-    base = models.DecimalField(max_digits=15, decimal_places=2)
-    iva = models.DecimalField(max_digits=10, decimal_places=2)
-    fecha_solicitud = models.DateField()
+    base = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    iva = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    fecha_solicitud = models.DateField(null=True, blank=True, verbose_name='Fecha de Solicitud')  # Editable
     persona_recibe = models.CharField(max_length=100)
     correo_recibe = models.EmailField()
     correo_cliente = models.EmailField()
     solicitante = models.CharField(max_length=100)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
-    
     fecha_emision = models.DateField(null=True, blank=True)
     serie = models.CharField(max_length=10, null=True, blank=True)
     factura = models.CharField(max_length=20, null=True, blank=True)
@@ -98,6 +108,12 @@ class Cliente(models.Model):
     estado_factura = models.CharField(max_length=20, null=True, blank=True)
     status = models.CharField(max_length=20, null=True, blank=True)
     recibo_operado = models.CharField(max_length=50, null=True, blank=True)
+    archivo_factura = models.FileField(
+        upload_to='facturas/',
+        null=True,
+        blank=True,
+        verbose_name='Archivo de Factura'
+    )
 
     class Meta:
         indexes = [

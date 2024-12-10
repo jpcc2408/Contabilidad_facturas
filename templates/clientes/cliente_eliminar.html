@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">Confirmar Eliminación</h5>
+                </div>
+                <div class="card-body">
+                    <p class="alert alert-warning">
+                        ¿Estás seguro que deseas eliminar la factura del cliente <strong>{{ cliente.razon_social }}</strong>?
+                    </p>
+                    <p><strong>Proyecto:</strong> {{ cliente.proyecto }}</p>
+                    <p><strong>Monto:</strong> {{ cliente.moneda }} {{ cliente.total_factura }}</p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger">Sí, Eliminar Factura</button>
+                            <a href="{% url 'cliente_lista' %}" class="btn btn-secondary">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

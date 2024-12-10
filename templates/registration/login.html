@@ -1,24 +1,175 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
+
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header text-center bg-primary text-white">
-                    <h3>Solicitud de Factura</h3>
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-left">
+            <div class="login-content">
+                <div class="rocket-icon">
+                    <i class="fas fa-file-invoice fa-3x"></i>
                 </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        {{ form|crispy }}
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
-                        </div>
-                    </form>
+                <h2>Sistema de Facturación</h2>
+                <p>Gestiona tus facturas de manera eficiente y segura</p>
+            </div>
+        </div>
+        <div class="login-right">
+            <div class="login-form">
+                <div class="text-end mb-3">
+                    <span class="text-muted">¿Necesitas ayuda?</span>
                 </div>
+                <h3 class="mb-4">Iniciar Sesión</h3>
+
+                {% if form.errors %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Usuario o contraseña incorrectos. Por favor, inténtelo de nuevo.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endif %}
+
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">USUARIO</label>
+                        <input type="text" name="username" class="form-control" placeholder="Ingrese su usuario">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">CONTRASEÑA</label>
+                        <input type="password" name="password" class="form-control" placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Ingresar</button>
+                </form>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f5f5f5;
+    padding: 1rem;
+}
+
+.login-card {
+    display: flex;
+    background: #fff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    width: 900px;
+    max-width: 100%;
+}
+
+.login-left {
+    background: #e74c3c;
+    color: white;
+    padding: 3rem;
+    display: flex;
+    align-items: center;
+    width: 45%;
+}
+
+.login-content {
+    text-align: center;
+}
+
+.rocket-icon {
+    margin-bottom: 2rem;
+}
+
+.login-right {
+    padding: 3rem;
+    width: 55%;
+    background: #1a2035;
+    color: white;
+}
+
+.login-form {
+    max-width: 380px;
+    margin: 0 auto;
+}
+
+.form-control {
+    background-color: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+    border-radius: 0;
+    padding: 0.75rem 0;
+    color: white;
+}
+
+.form-control:focus {
+    background-color: transparent;
+    border-color: #e74c3c;
+    box-shadow: none;
+    color: white;
+}
+
+.form-label {
+    font-size: 0.875rem;
+    color: rgba(255,255,255,0.7);
+}
+
+.btn-primary {
+    background-color: #e74c3c;
+    border: none;
+    padding: 0.75rem;
+    border-radius: 5px;
+}
+
+.btn-primary:hover {
+    background-color: #d44637;
+}
+
+.alert {
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    border: none;
+    border-radius: 5px;
+    font-size: 0.9rem;
+}
+
+.alert-danger {
+    background-color: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+}
+
+.alert i {
+    margin-right: 0.5rem;
+}
+
+.btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.75;
+}
+
+.btn-close:hover {
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
+    .login-card {
+        flex-direction: column;
+    }
+    
+    .login-left, .login-right {
+        width: 100%;
+        padding: 2rem;
+    }
+}
+</style>
 {% endblock %}

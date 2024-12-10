@@ -120,38 +120,48 @@
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
-                                <tr>
-                                    <th>Cliente</th>
-                                    <th>Proyecto</th>
-                                    <th>Estado</th>
-                                    <th>Monto</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for cliente in clientes_recientes %}
-                                <tr>
-                                    <td>
-                                        <div class="client-info">
-                                            <span class="client-name">{{ cliente.razon_social }}</span>
-                                            <small class="text-muted">{{ cliente.nit }}</small>
-                                        </div>
-                                    </td>
-                                    <td>{{ cliente.proyecto }}</td>
-                                    <td>
-                                        <span class="status-badge {{ cliente.estado_factura|lower }}">
-                                            {{ cliente.estado_factura|default:"Pendiente" }}
-                                        </span>
-                                    </td>
-                                    <td>{{ cliente.moneda }} {{ cliente.total_factura|floatformat:2 }}</td>
-                                    <td>
-                                        <a href="{% url 'cliente_detalle' cliente.correlativo %}" class="btn btn-sm btn-info">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
+    <tr>
+        <th>Cliente</th>
+        <th>Proyecto</th>
+        <th>Estado</th>
+        <th>Monto</th>
+        <th>Documento</th>
+        <th>Acciones</th>
+    </tr>
+</thead>
+<tbody>
+    {% for cliente in clientes_recientes %}
+    <tr>
+        <td>
+            <div class="client-info">
+                <span class="client-name">{{ cliente.razon_social }}</span>
+                <small class="text-muted">{{ cliente.nit }}</small>
+            </div>
+        </td>
+        <td>{{ cliente.proyecto }}</td>
+        <td>
+            <span class="status-badge {{ cliente.estado_factura|lower }}">
+                {{ cliente.estado_factura|default:"Pendiente" }}
+            </span>
+        </td>
+        <td>{{ cliente.moneda }} {{ cliente.total_factura|floatformat:2 }}</td>
+        <td>
+            {% if cliente.archivo_factura %}
+                <a href="{{ cliente.archivo_factura.url }}" target="_blank" class="btn btn-sm btn-success">
+                    <i class="fas fa-file-pdf"></i> Ver
+                </a>
+            {% else %}
+                <span class="badge bg-secondary">Sin documento</span>
+            {% endif %}
+        </td>
+        <td>
+            <a href="{% url 'cliente_detalle' cliente.correlativo %}" class="btn btn-sm btn-info">
+                <i class="fas fa-eye"></i>
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
                         </table>
                     </div>
                 </div>

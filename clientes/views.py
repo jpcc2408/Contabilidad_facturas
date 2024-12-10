@@ -12,13 +12,25 @@ import csv
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from io import BytesIO
+from reportlab.lib import colors
 import xlsxwriter
 
+
 def es_admin(user):
-    try:
-        return user.rol == 'admin'
-    except:
+    if not user or not user.is_authenticated:
         return False
+    
+    if not hasattr(user, 'rol'):
+        print(f"Error: El usuario {user.username} no tiene atributo 'rol'")
+        return False
+        
+    return user.rol == 'admin'
+
+
+
+
+
+
 
 @login_required
 def dashboard(request):
@@ -124,70 +136,92 @@ def cliente_lista(request):
 
 @login_required
 def cliente_nuevo(request):
-    if request.method == "POST":
-        form = ClienteForm(request.POST)
-        print("Datos del POST:", request.POST)
-        if form.is_valid():
-            print("Formulario válido")
-            try:
-                cliente = form.save(commit=False)
-                
-                # Obtener o crear usuario
-                try:
-                    usuario = Usuario.objects.get(username=request.user.username)
-                except Usuario.DoesNotExist:
-                    usuario = Usuario.objects.create(
-                        username=request.user.username,
-                        email=request.user.email,
-                        first_name=request.user.first_name,
-                        last_name=request.user.last_name,
-                        rol='standard'
-                    )
-                
-                cliente.creado_por = usuario
-                cliente.estado_factura = 'Pendiente'
-                
-                if cliente.total_factura and cliente.impuesto:
-                    cliente.base = cliente.total_factura / (1 + cliente.impuesto/100)
-                    cliente.iva = cliente.total_factura - cliente.base
-                
-                cliente.save()
-                print("Cliente guardado exitosamente")
-                messages.success(request, f'Cliente {cliente.razon_social} creado exitosamente!')
-                return redirect('cliente_lista')
-            except Exception as e:
-                print("Error al guardar:", str(e))
-                messages.error(request, f'Error al guardar: {str(e)}')
-        else:
-            print("Errores del formulario:", form.errors)
-            messages.error(request, 'Por favor corrija los errores en el formulario.')
-    else:
-        form = ClienteForm()
-    
-    return render(request, 'clientes/cliente_form.html', {'form': form})
+   if request.method == "POST":
+       form = ClienteForm(request.POST)
+       print("Datos del POST:", request.POST)
+       if form.is_valid():
+           print("Formulario válido")
+           try:
+               cliente = form.save(commit=False)
+               
+               try:
+                   usuario = Usuario.objects.get(username=request.user.username)
+               except Usuario.DoesNotExist:
+                   usuario = Usuario.objects.create(
+                       username=request.user.username,
+                       email=request.user.email,
+                       first_name=request.user.first_name,
+                       last_name=request.user.last_name,
+                       rol='standard'
+                   )
+               
+               cliente.creado_por = usuario
+               cliente.estado_factura = 'Pendiente'
+               
+               if cliente.total_factura and cliente.impuesto:
+                   if cliente.impuesto == 'EXENTO':
+                       cliente.base = cliente.total_factura
+                       cliente.iva = 0
+                   elif cliente.impuesto == 'AFECTO':
+                       cliente.base = cliente.total_factura / Decimal('1.12')
+                       cliente.iva = cliente.base * Decimal('0.12')
+               
+               cliente.save()
+               print("Cliente guardado exitosamente")
+               messages.success(request, f'Cliente {cliente.razon_social} creado exitosamente!')
+               return redirect('cliente_lista')
+           except Exception as e:
+               print("Error al guardar:", str(e))
+               messages.error(request, f'Error al guardar: {str(e)}')
+       else:
+           print("Errores del formulario:", form.errors)
+           messages.error(request, 'Por favor corrija los errores en el formulario.')
+   else:
+       form = ClienteForm()
+   
+   return render(request, 'clientes/cliente_form.html', {'form': form})
 
 @login_required
 def cliente_detalle(request, pk):
-    cliente = get_object_or_404(Cliente, correlativo=pk)
-    if request.method == "POST":
-        form = ClienteForm(request.POST, instance=cliente)
-        if form.is_valid():
-            cliente = form.save(commit=False)
-            if cliente.total_factura and cliente.impuesto:
-                cliente.base = cliente.total_factura / (1 + cliente.impuesto/100)
-                cliente.iva = cliente.total_factura - cliente.base
-            cliente.save()
-            messages.success(request, 'Datos actualizados exitosamente!')
-            return redirect('cliente_lista')
-        else:
-            messages.error(request, 'Por favor corrija los errores en el formulario.')
-    else:
-        form = ClienteForm(instance=cliente)
-    return render(request, 'clientes/cliente_detalle.html', {
-        'cliente': cliente,
-        'form': form,
-        'is_update': True
-    })
+   try:
+       if es_admin(request.user):
+           cliente = get_object_or_404(Cliente, correlativo=pk)
+       else:
+           try:
+               cliente = Cliente.objects.get(correlativo=pk, creado_por=request.user)
+           except Cliente.DoesNotExist:
+               messages.warning(request, f'⚠️ ACCESO DENEGADO: No tienes autorización para ver esta factura. Solo puedes ver las facturas creadas por ti.')
+               return redirect('cliente_lista')
+       
+       if request.method == "POST":
+           form = ClienteForm(request.POST, instance=cliente)
+           if form.is_valid():
+               cliente = form.save(commit=False)
+               if cliente.total_factura and cliente.impuesto:
+                   if cliente.impuesto == 'EXENTO':
+                       cliente.base = cliente.total_factura
+                       cliente.iva = 0
+                   elif cliente.impuesto == 'AFECTO':
+                       cliente.base = cliente.total_factura / Decimal('1.12')
+                       cliente.iva = cliente.base * Decimal('0.12')
+               cliente.save()
+               messages.success(request, 'Datos actualizados exitosamente!')
+               return redirect('cliente_lista')
+           else:
+               messages.error(request, 'Por favor corrija los errores en el formulario.')
+       else:
+           form = ClienteForm(instance=cliente)
+
+       return render(request, 'clientes/cliente_detalle.html', {
+           'cliente': cliente,
+           'form': form,
+           'is_update': True
+       })
+   except Exception as e:
+       messages.error(request, 'Ha ocurrido un error al acceder a la factura.')
+       return redirect('cliente_lista')
+
+
 
 @login_required
 def cliente_editar_factura(request, pk):
@@ -207,6 +241,11 @@ def cliente_editar_factura(request, pk):
             cliente.estado_factura = request.POST.get('estado_factura')
             cliente.status = request.POST.get('status')
             cliente.recibo_operado = request.POST.get('recibo_operado')
+            
+            # Manejo del archivo
+            archivo = request.FILES.get('archivo_factura')
+            if archivo:
+                cliente.archivo_factura = archivo
             
             cliente.save()
             messages.success(request, 'Datos de facturación actualizados exitosamente!')
@@ -514,5 +553,164 @@ def exportar_facturas(request, formato):
         
         workbook.close()
         return response
+
+@login_required
+def cliente_eliminar(request, pk):
+    try:
+        if not es_admin(request.user):
+            messages.warning(request, '⚠️ ACCESO DENEGADO: Solo los administradores pueden eliminar facturas.')
+            return redirect('cliente_lista')
+        
+        cliente = get_object_or_404(Cliente, correlativo=pk)
+        
+        if request.method == "POST":
+            razon_social = cliente.razon_social  # Guardamos el nombre para el mensaje
+            cliente.delete()
+            messages.success(request, f'✅ La factura del cliente "{razon_social}" ha sido eliminada exitosamente.')
+            return redirect('cliente_lista')
+            
+        return render(request, 'clientes/cliente_eliminar.html', {
+            'cliente': cliente
+        })
+        
+    except Exception as e:
+        messages.error(request, '❌ Ha ocurrido un error al intentar eliminar la factura.')
+        return redirect('cliente_lista')
+
+@login_required
+def imprimir_factura(request, pk):
+    try:
+        cliente = get_object_or_404(Cliente, correlativo=pk)
+        
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="factura_{cliente.correlativo}.pdf"'
+        
+        buffer = BytesIO()
+        p = canvas.Canvas(buffer, pagesize=letter)
+        width, height = letter
+
+        # Colores
+        azul_header = colors.HexColor('#1a56db')      # Azul más corporativo
+        gris_texto = colors.HexColor('#374151')       # Gris oscuro para texto
+        verde_badge = colors.HexColor('#059669')      # Verde para estados
+
+        # Header
+        p.setFillColor(azul_header)
+        p.rect(0, height - 80, width, 80, fill=True)
+        
+        # Contenido del header
+        p.setFillColor(colors.white)
+        p.setFont("Helvetica-Bold", 22)
+        p.drawString(50, height - 35, "GRUPO CFE")
+        p.setFont("Helvetica", 11)
+        p.drawString(50, height - 55, f"Factura #{cliente.correlativo}")
+        p.drawString(50, height - 70, f"Fecha: {datetime.now().strftime('%d/%m/%Y')}")
+
+        # Total en header
+        p.setFont("Helvetica-Bold", 12)
+        p.drawString(400, height - 35, "TOTAL")
+        p.setFont("Helvetica-Bold", 18)
+        p.drawString(400, height - 60, f"{cliente.moneda} {cliente.total_factura:,.2f}")
+
+        # Sección Facturar A
+        y = height - 120
+        p.setFillColor(gris_texto)
+        p.setFont("Helvetica-Bold", 12)
+        p.drawString(50, y, "FACTURAR A")
+        
+        p.setFont("Helvetica", 10)
+        y -= 20
+        p.drawString(50, y, cliente.razon_social)
+        y -= 15
+        p.drawString(50, y, f"NIT: {cliente.nit}")
+        y -= 15
+        p.drawString(50, y, cliente.direccion)
+
+        # Detalles del Proyecto
+        y -= 30
+        p.setFont("Helvetica-Bold", 12)
+        p.drawString(50, y, "DETALLES DEL PROYECTO")
+        y -= 20
+
+        # Crear cajas para detalles del proyecto
+        detalles_proyecto = [
+            ("Proyecto", cliente.proyecto),
+            ("Socio", cliente.socio),
+            ("Encargado", cliente.encargado),
+            ("No. Propuesta", cliente.no_propuesta),
+            ("Código", cliente.codigo)
+        ]
+
+        for label, value in detalles_proyecto:
+            p.rect(50, y-15, width-100, 25)  # Caja
+            p.setFont("Helvetica", 10)
+            p.drawString(60, y, f"{label}: {value}")
+            y -= 25
+
+        # Detalle Financiero
+        y -= 30
+        p.setFont("Helvetica-Bold", 12)
+        p.drawString(50, y, "DETALLE FINANCIERO")
+        y -= 25
+
+        detalles_financieros = [
+            ("Base", cliente.base),
+            ("IVA", cliente.iva),
+            ("Impuesto", cliente.impuesto),
+            ("Total", cliente.total_factura)
+        ]
+
+        for label, value in detalles_financieros:
+            p.setFont("Helvetica", 10)
+            p.drawString(50, y, label)
+            p.drawString(400, y, f"{cliente.moneda} {value:,.2f}")
+            y -= 20
+
+        # Estado
+        y -= 30
+        p.setFont("Helvetica-Bold", 12)
+        p.drawString(50, y, "ESTADO")
+        y -= 25
+
+        # Badge de estado
+        estado = cliente.estado_factura or "Pendiente"
+        p.setFillColor(verde_badge)
+        p.roundRect(50, y-15, 70, 20, 6, fill=True)
+        p.setFillColor(colors.white)
+        p.setFont("Helvetica-Bold", 10)
+        p.drawString(55, y-10, estado)
+
+        # Contacto
+        y -= 50
+        p.setFillColor(gris_texto)
+        p.setFont("Helvetica-Bold", 12)
+        p.drawString(50, y, "CONTACTO")
+        p.setFont("Helvetica", 10)
+        y -= 20
+        p.drawString(50, y, f"Email: {cliente.correo_cliente}")
+        y -= 15
+        p.drawString(50, y, f"Persona que recibe: {cliente.persona_recibe}")
+
+        # Firmas
+        y = 50
+        p.line(50, y, 200, y)
+        p.line(350, y, 500, y)
+        p.setFont("Helvetica", 9)
+        p.drawString(110, y-20, "Cliente")
+        p.drawString(410, y-20, "Autorizado")
+
+        p.showPage()
+        p.save()
+        
+        pdf = buffer.getvalue()
+        buffer.close()
+        response.write(pdf)
+        
+        return response
+        
+    except Exception as e:
+        print(f"Error al generar factura: {str(e)}")
+        messages.error(request, 'Ha ocurrido un error al generar la factura.')
+        return redirect('cliente_lista')
     
     return HttpResponse('Formato no válido')
