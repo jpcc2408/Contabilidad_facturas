@@ -1,32 +1,40 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
-{% block title %}Nuevo Cliente{% endblock %}
-
 {% block content %}
 <div class="container mt-4">
     <div class="row">
         <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Nuevo Cliente</h3>
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">Nueva Solicitud de Factura</h3>
                 </div>
                 <div class="card-body">
-                    <form method="POST" class="needs-validation" novalidate>
+                    <form method="post" id="clienteForm" enctype="multipart/form-data">
                         {% csrf_token %}
+                        <input type="hidden" name="estado_factura" value="PENDIENTE">
+                        <input type="hidden" name="status" value="ACTIVO">
+                        
+                        <!-- Información del Cliente -->
                         <div class="row">
-                            <div class="col-md-6">
-                                {{ form.razon_social|as_crispy_field }}
-                            </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 {{ form.nit|as_crispy_field }}
                             </div>
+                            <div class="col-md-4">
+                                {{ form.cliente|as_crispy_field }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.razon_social|as_crispy_field }}
+                            </div>
                         </div>
+
                         <div class="row">
                             <div class="col-12">
                                 {{ form.direccion|as_crispy_field }}
                             </div>
                         </div>
+
+                        <!-- Información del Proyecto -->
                         <div class="row">
                             <div class="col-md-6">
                                 {{ form.no_propuesta|as_crispy_field }}
@@ -35,11 +43,13 @@
                                 {{ form.codigo|as_crispy_field }}
                             </div>
                         </div>
+
                         <div class="row">
                             <div class="col-12">
                                 {{ form.concepto|as_crispy_field }}
                             </div>
                         </div>
+
                         <div class="row">
                             <div class="col-md-4">
                                 {{ form.proyecto|as_crispy_field }}
@@ -51,58 +61,61 @@
                                 {{ form.encargado|as_crispy_field }}
                             </div>
                         </div>
+
+                        <!-- Información Financiera -->
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 {{ form.moneda|as_crispy_field }}
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 {{ form.tipo_cambio|as_crispy_field }}
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 {{ form.impuesto|as_crispy_field }}
                             </div>
-                            <div class="col-md-6">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
                                 {{ form.total_factura|as_crispy_field }}
                             </div>
-                        </div>
-                             </div>
-                             <div class="row">
-                                <div class="col-md-6">
-                                    {{ form.fecha_solicitud|as_crispy_field }}
-                                </div>
-                                <div class="col-md-6">
-                                    {{ form.persona_recibe|as_crispy_field }}
-                                </div>
-                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                {{ form.correo_recibe|as_crispy_field }}
+                            <div class="col-md-4">
+                                {{ form.base|as_crispy_field }}
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
+                                {{ form.iva|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <!-- Fecha y Contacto -->
+                        <div class="row">
+                            <div class="col-md-4">
+                                {{ form.fecha_solicitud|as_crispy_field }}
+                            </div>
+                            <div class="col-md-4">
                                 {{ form.correo_cliente|as_crispy_field }}
                             </div>
+                            <div class="col-md-4">
+                                {{ form.correo_recibe|as_crispy_field }}
+                            </div>
                         </div>
+
                         <div class="row">
-                            <div class="col-md-12">
+                            <div class="col-md-6">
+                                {{ form.persona_recibe|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
                                 {{ form.solicitante|as_crispy_field }}
                             </div>
                         </div>
-                       
-                        <!-- Campos ocultos de factura -->
-                        {{ form.fecha_emision }}
-                        {{ form.serie }}
-                        {{ form.factura }}
-                        {{ form.autorizacion }}
-                        {{ form.estado_factura }}
-                        {{ form.status }}
-                        {{ form.recibo_operado }}
-                        
-                        <div class="row mt-3">
-                            <div class="col-12 text-center">
-                                <button type="submit" class="btn btn-primary">Guardar Cliente</button>
-                                <a href="{% url 'cliente_lista' %}" class="btn btn-secondary">Cancelar</a>
-                            </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Guardar Solicitud
+                            </button>
+                            <a href="{% url 'cliente_lista' %}" class="btn btn-secondary ms-2">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </a>
                         </div>
                     </form>
                 </div>
@@ -110,4 +123,132 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Configurar fecha actual
+    let today = new Date().toISOString().split('T')[0];
+    let fechaSolicitud = document.getElementById('id_fecha_solicitud');
+    if (fechaSolicitud) {
+        fechaSolicitud.value = today;
+    }
+
+    // Búsqueda por NIT
+    const nitField = document.getElementById('id_nit');
+    if (nitField) {
+        nitField.addEventListener('blur', function() {
+            const nit = this.value.trim();
+            if (nit) {
+                Swal.fire({
+                    title: 'Buscando...',
+                    text: 'Espere un momento',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    willOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                fetch(`/clientes/buscar-cliente/?nit=${nit}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Rellenar campos del cliente
+                            document.getElementById('id_nit').value = nit;
+                            document.getElementById('id_cliente').value = data.data.cliente;
+                            document.getElementById('id_razon_social').value = data.data.razon_social;
+                            document.getElementById('id_direccion').value = data.data.direccion;
+                            document.getElementById('id_correo_cliente').value = data.data.correo_cliente;
+                            document.getElementById('id_correo_recibe').value = data.data.correo_recibe;
+                            document.getElementById('id_persona_recibe').value = data.data.persona_recibe;
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Cliente encontrado!',
+                                text: 'Los datos han sido cargados',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Cliente no encontrado',
+                                text: data.message,
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Hubo un problema al buscar el cliente'
+                        });
+                    });
+            }
+        });
+    }
+
+    // Cálculo de impuestos
+    const totalField = document.getElementById('id_total_factura');
+    const impuestoField = document.getElementById('id_impuesto');
+    const baseField = document.getElementById('id_base');
+    const ivaField = document.getElementById('id_iva');
+
+    function calcularImpuestos() {
+        const total = parseFloat(totalField.value) || 0;
+        const impuesto = impuestoField.value;
+
+        if (impuesto === 'AFECTO') {
+            const base = total / 1.12;
+            const iva = total - base;
+            baseField.value = base.toFixed(2);
+            ivaField.value = iva.toFixed(2);
+        } else {
+            baseField.value = total.toFixed(2);
+            ivaField.value = '0.00';
+        }
+    }
+
+    if (totalField && impuestoField) {
+        totalField.addEventListener('input', calcularImpuestos);
+        impuestoField.addEventListener('change', calcularImpuestos);
+    }
+});
+</script>
+
+<style>
+.date-input {
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #212529;
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+.date-input:focus {
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    background-color: #e9ecef;
+}
+</style>
 {% endblock %}

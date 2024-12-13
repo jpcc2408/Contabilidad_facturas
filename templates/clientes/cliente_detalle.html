@@ -4,20 +4,24 @@
 {% block content %}
 <div class="container mt-4">
     <!-- Header con información básica y acciones -->
-    <div class="row mb-3">
-        <div class="col">
-            <h2>Cliente #{{ cliente.correlativo }} - {{ cliente.razon_social }}</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Cliente #{{cliente.correlativo}} - {{cliente.cliente}}</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'cliente_lista' %}">Clientes</a></li>
+                    <li class="breadcrumb-item active">Detalle de Cliente</li>
+                </ol>
+            </nav>
         </div>
-        <div class="col-auto">
+        <div class="btn-group">
             <a href="{% url 'cliente_lista' %}" class="btn btn-secondary me-2">
                 <i class="fas fa-arrow-left"></i> Volver
             </a>
-            
             <a href="{% url 'cliente_editar_factura' cliente.correlativo %}" class="btn btn-primary">
                 <i class="fas fa-edit"></i> Editar Facturación
             </a>
-
-            </button>
             <button class="btn btn-success" onclick="window.print()">
                 <i class="fas fa-print"></i> Imprimir
             </button>
@@ -27,12 +31,18 @@
     <div class="row">
         <!-- Información General -->
         <div class="col-md-6 mb-4">
-            <div class="card h-100">
+            <div class="card h-100 shadow-sm">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0">Información General</h5>
+                    <h5 class="card-title mb-0"><i class="fas fa-info-circle me-2"></i>Información General</h5>
                 </div>
                 <div class="card-body">
                     <dl class="row mb-0">
+                        <dt class="col-sm-4">Cliente:</dt>
+                        <dd class="col-sm-8 fw-bold">{{ cliente.cliente }}</dd>
+
+                        <dt class="col-sm-4">Razón Social:</dt>
+                        <dd class="col-sm-8">{{ cliente.razon_social }}</dd>
+
                         <dt class="col-sm-4">NIT:</dt>
                         <dd class="col-sm-8">{{ cliente.nit }}</dd>
 
@@ -51,14 +61,14 @@
 
         <!-- Información del Proyecto -->
         <div class="col-md-6 mb-4">
-            <div class="card h-100">
+            <div class="card h-100 shadow-sm">
                 <div class="card-header bg-info text-white">
-                    <h5 class="card-title mb-0">Información del Proyecto</h5>
+                    <h5 class="card-title mb-0"><i class="fas fa-project-diagram me-2"></i>Información del Proyecto</h5>
                 </div>
                 <div class="card-body">
                     <dl class="row mb-0">
                         <dt class="col-sm-4">Proyecto:</dt>
-                        <dd class="col-sm-8">{{ cliente.proyecto }}</dd>
+                        <dd class="col-sm-8 fw-bold">{{ cliente.proyecto }}</dd>
 
                         <dt class="col-sm-4">Socio:</dt>
                         <dd class="col-sm-8">{{ cliente.socio }}</dd>
@@ -75,9 +85,9 @@
 
         <!-- Información Financiera -->
         <div class="col-md-6 mb-4">
-            <div class="card h-100">
+            <div class="card h-100 shadow-sm">
                 <div class="card-header bg-success text-white">
-                    <h5 class="card-title mb-0">Información Financiera</h5>
+                    <h5 class="card-title mb-0"><i class="fas fa-dollar-sign me-2"></i>Información Financiera</h5>
                 </div>
                 <div class="card-body">
                     <dl class="row mb-0">
@@ -85,10 +95,10 @@
                         <dd class="col-sm-8">{{ cliente.get_moneda_display }}</dd>
 
                         <dt class="col-sm-4">Tipo Cambio:</dt>
-                        <dd class="col-sm-8">{{ cliente.tipo_cambio }}</dd>
+                        <dd class="col-sm-8">{{ cliente.tipo_cambio|floatformat:2 }}</dd>
 
                         <dt class="col-sm-4">Total Factura:</dt>
-                        <dd class="col-sm-8">{{ cliente.moneda }} {{ cliente.total_factura|floatformat:2 }}</dd>
+                        <dd class="col-sm-8 fw-bold text-success">{{ cliente.moneda }} {{ cliente.total_factura|floatformat:2 }}</dd>
 
                         <dt class="col-sm-4">Base:</dt>
                         <dd class="col-sm-8">{{ cliente.base|floatformat:2 }}</dd>
@@ -97,7 +107,7 @@
                         <dd class="col-sm-8">{{ cliente.iva|floatformat:2 }}</dd>
 
                         <dt class="col-sm-4">Impuesto:</dt>
-                        <dd class="col-sm-8">{{ cliente.impuesto|floatformat:2 }}</dd>
+                        <dd class="col-sm-8">{{ cliente.get_impuesto_display }}</dd>
                     </dl>
                 </div>
             </div>
@@ -105,21 +115,23 @@
 
         <!-- Información de Facturación -->
         <div class="col-md-6 mb-4">
-            <div class="card h-100">
+            <div class="card h-100 shadow-sm">
                 <div class="card-header bg-warning">
-                    <h5 class="card-title mb-0">Información de Facturación</h5>
+                    <h5 class="card-title mb-0"><i class="fas fa-file-invoice me-2"></i>Información de Facturación</h5>
                 </div>
                 <div class="card-body">
                     <dl class="row mb-0">
                         <dt class="col-sm-4">Serie-Factura:</dt>
-                        <dd class="col-sm-8">{{ cliente.serie }}-{{ cliente.factura }}</dd>
+                        <dd class="col-sm-8">{{ cliente.serie }}-{{ cliente.factura|default:"No establecida" }}</dd>
 
                         <dt class="col-sm-4">Fecha Emisión:</dt>
                         <dd class="col-sm-8">{{ cliente.fecha_emision|default:"No establecida" }}</dd>
 
                         <dt class="col-sm-4">Estado:</dt>
                         <dd class="col-sm-8">
-                            <span class="badge {% if cliente.estado_factura == 'Pagada' %}bg-success{% elif cliente.estado_factura == 'Pendiente' %}bg-warning{% else %}bg-secondary{% endif %}">
+                            <span class="badge {% if cliente.estado_factura == 'PAGADA' %}bg-success
+                                           {% elif cliente.estado_factura == 'EMITIDA' %}bg-warning
+                                           {% else %}bg-secondary{% endif %}">
                                 {{ cliente.estado_factura|default:"No establecido" }}
                             </span>
                         </dd>
@@ -129,7 +141,7 @@
 
                         <dt class="col-sm-4">Status:</dt>
                         <dd class="col-sm-8">
-                            <span class="badge {% if cliente.status == 'Activo' %}bg-success{% else %}bg-danger{% endif %}">
+                            <span class="badge {% if cliente.status == 'ACTIVO' %}bg-success{% else %}bg-danger{% endif %}">
                                 {{ cliente.status|default:"No establecido" }}
                             </span>
                         </dd>
@@ -141,11 +153,11 @@
             </div>
         </div>
 
-        <!-- Información de Contacto -->
+        <!-- Información de Contacto y Concepto -->
         <div class="col-12 mb-4">
-            <div class="card">
+            <div class="card shadow-sm">
                 <div class="card-header bg-secondary text-white">
-                    <h5 class="card-title mb-0">Información de Contacto y Concepto</h5>
+                    <h5 class="card-title mb-0"><i class="fas fa-address-card me-2"></i>Información de Contacto y Concepto</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -156,18 +168,22 @@
 
                                 <dt class="col-sm-4">Correo Recibe:</dt>
                                 <dd class="col-sm-8">
-                                    <a href="mailto:{{ cliente.correo_recibe }}">{{ cliente.correo_recibe }}</a>
+                                    <a href="mailto:{{ cliente.correo_recibe }}" class="text-decoration-none">
+                                        <i class="fas fa-envelope me-1"></i>{{ cliente.correo_recibe }}
+                                    </a>
                                 </dd>
 
                                 <dt class="col-sm-4">Correo Cliente:</dt>
                                 <dd class="col-sm-8">
-                                    <a href="mailto:{{ cliente.correo_cliente }}">{{ cliente.correo_cliente }}</a>
+                                    <a href="mailto:{{ cliente.correo_cliente }}" class="text-decoration-none">
+                                        <i class="fas fa-envelope me-1"></i>{{ cliente.correo_cliente }}
+                                    </a>
                                 </dd>
                             </dl>
                         </div>
                         <div class="col-md-6">
-                            <dt>Concepto:</dt>
-                            <dd>{{ cliente.concepto|linebreaks }}</dd>
+                            <h6 class="mb-2">Concepto:</h6>
+                            <p class="mb-0">{{ cliente.concepto|linebreaks }}</p>
                         </div>
                     </div>
                 </div>
@@ -175,7 +191,6 @@
         </div>
     </div>
 </div>
-
 
 {% endblock %}
 
