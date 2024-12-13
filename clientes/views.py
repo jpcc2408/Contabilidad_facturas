@@ -2,11 +2,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Sum, Q
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.core.paginator import Paginator
 from datetime import datetime
 from decimal import Decimal
-from .models import Cliente, Usuario
+from .models import Cliente, Usuario, ClienteBase 
 from .forms import ClienteForm
 import csv
 from reportlab.pdfgen import canvas
@@ -26,9 +26,40 @@ def es_admin(user):
         
     return user.rol == 'admin'
 
-
-
-
+@login_required
+def buscar_cliente_por_nit(request):
+    nit = request.GET.get('nit', '').strip()
+    print(f"Buscando NIT: {nit}")  # Debug log
+    try:
+        cliente_base = ClienteBase.objects.filter(nit=nit).first()
+        if cliente_base:
+            print(f"Cliente encontrado: {cliente_base.razon_social}")
+            data = {
+                'success': True,
+                'data': {
+                    'nit': cliente_base.nit,  # Agregamos el NIT
+                    'cliente': cliente_base.cliente,
+                    'razon_social': cliente_base.razon_social,
+                    'direccion': cliente_base.direccion,
+                    'correo_cliente': cliente_base.correo_cliente,
+                    'correo_recibe': cliente_base.correo_recibe,
+                    'persona_recibe': cliente_base.persona_recibe,
+                }
+            }
+        else:
+            data = {
+                'success': False,
+                'message': f'No se encontró cliente con el NIT: {nit}'
+            }
+    except Exception as e:
+        print(f"Error al buscar cliente: {str(e)}")
+        data = {
+            'success': False,
+            'message': f'Error al buscar cliente: {str(e)}'
+        }
+    
+    print(f"Enviando respuesta: {data}")
+    return JsonResponse(data)
 
 
 
@@ -156,7 +187,8 @@ def cliente_nuevo(request):
                    )
                
                cliente.creado_por = usuario
-               cliente.estado_factura = 'Pendiente'
+               cliente.estado_factura = 'PENDIENTE'  # Establecer valor por defecto
+               cliente.status = 'ACTIVO'  # Establecer valor por defecto
                
                if cliente.total_factura and cliente.impuesto:
                    if cliente.impuesto == 'EXENTO':
@@ -178,8 +210,32 @@ def cliente_nuevo(request):
            messages.error(request, 'Por favor corrija los errores en el formulario.')
    else:
        form = ClienteForm()
+       # Establecer valores por defecto para nuevos registros
+       form.initial.update({
+           'estado_factura': 'PENDIENTE',
+           'status': 'ACTIVO'
+       })
+       
+       # Verificar si hay un NIT en el querystring para prellenado
+       nit = request.GET.get('nit')
+       if nit:
+           try:
+               cliente_base = ClienteBase.objects.get(nit=nit)
+               form.initial.update({
+                   'nit': cliente_base.nit,
+                   'razon_social': cliente_base.razon_social,
+                   'direccion': cliente_base.direccion,
+                   'correo_cliente': cliente_base.correo_cliente,
+                   'correo_recibe': cliente_base.correo_recibe,
+                   'persona_recibe': cliente_base.persona_recibe,
+               })
+           except ClienteBase.DoesNotExist:
+               pass
    
-   return render(request, 'clientes/cliente_form.html', {'form': form})
+   return render(request, 'clientes/cliente_form.html', {
+       'form': form,
+       'autocomplete_enabled': True
+   })
 
 @login_required
 def cliente_detalle(request, pk):
@@ -576,6 +632,51 @@ def cliente_eliminar(request, pk):
     except Exception as e:
         messages.error(request, '❌ Ha ocurrido un error al intentar eliminar la factura.')
         return redirect('cliente_lista')
+
+@login_required
+def buscar_cliente_por_nit(request):
+    nit = request.GET.get('nit', '').strip()
+    print(f"Buscando NIT: {nit}")  # Debug log
+    
+    try:
+        # Usamos filter().first() para evitar errores con duplicados
+        cliente_base = ClienteBase.objects.filter(nit=nit).first()
+        
+        if cliente_base:
+            print(f"Cliente encontrado: {cliente_base.razon_social}")
+            data = {
+                'success': True,
+                'data': {
+                    'cliente': cliente_base.cliente,
+                    'razon_social': cliente_base.razon_social,
+                    'direccion': cliente_base.direccion,
+                    'correo_cliente': cliente_base.correo_cliente,
+                    'correo_recibe': cliente_base.correo_recibe,
+                    'persona_recibe': cliente_base.persona_recibe,
+                }
+            }
+        else:
+            print(f"No se encontró cliente con NIT: {nit}")
+            data = {
+                'success': False,
+                'message': f'No se encontró ningún cliente con el NIT: {nit}'
+            }
+            
+    except ClienteBase.DoesNotExist:
+        print(f"No se encontró cliente con NIT: {nit}")
+        data = {
+            'success': False,
+            'message': f'No se encontró cliente con el NIT: {nit}'
+        }
+    except Exception as e:
+        print(f"Error al buscar cliente: {str(e)}")
+        data = {
+            'success': False,
+            'message': f'Error al buscar cliente: {str(e)}'
+        }
+    
+    print(f"Enviando respuesta: {data}")  # Debug log
+    return JsonResponse(data)
 
 @login_required
 def imprimir_factura(request, pk):

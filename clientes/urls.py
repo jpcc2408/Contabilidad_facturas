@@ -14,4 +14,5 @@ urlpatterns = [
     path('exportar/<str:formato>/', views.exportar_facturas, name='exportar_facturas'),
     path('<int:pk>/eliminar/', views.cliente_eliminar, name='cliente_eliminar'),
     path('<int:pk>/imprimir-factura/', views.imprimir_factura, name='imprimir_factura'),
+    path('buscar-cliente/', views.buscar_cliente_por_nit, name='buscar_cliente_por_nit'),
 ]
